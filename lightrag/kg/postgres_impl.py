@@ -4601,7 +4601,7 @@ SQL_TEMPLATES = {
                               JOIN rc ON TRUE
                      WHERE c.dist < $3
                        AND c.chunk_ids && (rc.chunk_arr::varchar[])
-                     ORDER BY c.dist, c.id 
+                     ORDER BY c.dist, c.id
                          LIMIT $4;
                      """,
     "entities": """
@@ -4627,7 +4627,7 @@ SQL_TEMPLATES = {
                          JOIN rc ON TRUE
                 WHERE c.dist < $3
                   AND c.chunk_ids && (rc.chunk_arr::varchar[])
-                ORDER BY c.dist, c.id 
+                ORDER BY c.dist, c.id
                     LIMIT $4;
                 """,
     "chunks": """
