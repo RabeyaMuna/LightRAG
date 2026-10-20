@@ -924,7 +924,7 @@ class PostgreSQLDB:
                     )
                 else:
                     logger.warning(
-                        "Doesn't support this vector index type: {self.vector_index_type}. "
+                        f"Doesn't support this vector index type: {self.vector_index_type}. "
                         "Supported types: HNSW, IVFFLAT"
                     )
             except Exception as e:
@@ -2013,7 +2013,9 @@ class PGVectorStorage(BaseVectorStorage):
         embedding = embeddings[0]
         embedding_string = ",".join(map(str, embedding))
         # Use parameterized document IDs (None means search across all documents)
-        sql = SQL_TEMPLATES[self.namespace].format(embedding_string=embedding_string)
+        sql = SQL_TEMPLATES[self.namespace].format(
+            embedding_string=embedding_string
+        )
         params = {
             "workspace": self.workspace,
             "doc_ids": ids,
@@ -2113,7 +2115,10 @@ class PGVectorStorage(BaseVectorStorage):
             )
             return None
 
-        query = f"SELECT *, EXTRACT(EPOCH FROM create_time)::BIGINT as created_at FROM {table_name} WHERE workspace=$1 AND id=$2"
+        query = (
+            f"SELECT *, EXTRACT(EPOCH FROM create_time)::BIGINT as created_at "
+            f"FROM {table_name} WHERE workspace=$1 AND id=$2"
+        )
         params = {"workspace": self.workspace, "id": id}
 
         try:
@@ -2147,7 +2152,10 @@ class PGVectorStorage(BaseVectorStorage):
             return []
 
         ids_str = ",".join([f"'{id}'" for id in ids])
-        query = f"SELECT *, EXTRACT(EPOCH FROM create_time)::BIGINT as created_at FROM {table_name} WHERE workspace=$1 AND id IN ({ids_str})"
+        query = (
+            f"SELECT *, EXTRACT(EPOCH FROM create_time)::BIGINT as created_at "
+            f"FROM {table_name} WHERE workspace=$1 AND id IN ({ids_str})"
+        )
         params = {"workspace": self.workspace}
 
         try:
@@ -2180,7 +2188,10 @@ class PGVectorStorage(BaseVectorStorage):
             return {}
 
         ids_str = ",".join([f"'{id}'" for id in ids])
-        query = f"SELECT id, content_vector FROM {table_name} WHERE workspace=$1 AND id IN ({ids_str})"
+        query = (
+            f"SELECT id, content_vector FROM {table_name} "
+            f"WHERE workspace=$1 AND id IN ({ids_str})"
+        )
         params = {"workspace": self.workspace}
 
         try:
@@ -2362,21 +2373,19 @@ class PGDocStatusStorage(DocStatusStorage):
             created_at = self._format_datetime_with_timezone(row["created_at"])
             updated_at = self._format_datetime_with_timezone(row["updated_at"])
 
-            processed_results.append(
-                {
-                    "content_length": row["content_length"],
-                    "content_summary": row["content_summary"],
-                    "status": row["status"],
-                    "chunks_count": row["chunks_count"],
-                    "created_at": created_at,
-                    "updated_at": updated_at,
-                    "file_path": row["file_path"],
-                    "chunks_list": chunks_list,
-                    "metadata": metadata,
-                    "error_msg": row.get("error_msg"),
-                    "track_id": row.get("track_id"),
-                }
-            )
+            processed_results.append({
+                "content_length": row["content_length"],
+                "content_summary": row["content_summary"],
+                "status": row["status"],
+                "chunks_count": row["chunks_count"],
+                "created_at": created_at,
+                "updated_at": updated_at,
+                "file_path": row["file_path"],
+                "chunks_list": chunks_list,
+                "metadata": metadata,
+                "error_msg": row.get("error_msg"),
+                "track_id": row.get("track_id"),
+            })
 
         return processed_results
 
@@ -2541,7 +2550,6 @@ class PGDocStatusStorage(DocStatusStorage):
         where_clause = "WHERE workspace=$1"
         params = {"workspace": self.workspace}
         param_count = 1
-
         if status_filter is not None:
             param_count += 1
             where_clause += f" AND status=${param_count}"
@@ -2922,7 +2930,6 @@ class PGGraphStorage(BaseGraphStorage):
                 value converted to a python type
         """
 
-        @staticmethod
         def parse_agtype_string(agtype_str: str) -> tuple[str, str]:
             """
             Parse agtype string precisely, separating JSON content and type identifier
@@ -2948,7 +2955,6 @@ class PGGraphStorage(BaseGraphStorage):
 
             return json_content, type_identifier
 
-        @staticmethod
         def safe_json_parse(json_str: str, context: str = "") -> dict:
             """
             Safe JSON parsing with simplified error logging
@@ -3387,7 +3393,9 @@ class PGGraphStorage(BaseGraphStorage):
                 logger.error(f"[{self.workspace}] Error during edge deletion: {str(e)}")
                 raise
 
-    async def get_nodes_batch(self, node_ids: list[str], batch_size: int = 1000) -> dict[str, dict]:
+    async def get_nodes_batch(
+        self, node_ids: list[str], batch_size: int = 1000
+    ) -> dict[str, dict]:
         """
         Retrieve multiple nodes in one query using UNWIND.
 
@@ -3453,7 +3461,9 @@ class PGGraphStorage(BaseGraphStorage):
 
         return nodes_dict
 
-    async def node_degrees_batch(self, node_ids: list[str], batch_size: int = 500) -> dict[str, int]:
+    async def node_degrees_batch(
+        self, node_ids: list[str], batch_size: int = 500
+    ) -> dict[str, int]:
         """
         Retrieve the degree for multiple nodes in a single query using UNWIND.
         Calculates the total degree by counting distinct relationships.
@@ -3482,7 +3492,7 @@ class PGGraphStorage(BaseGraphStorage):
         in_degrees = {}
 
         for i in range(0, len(unique_ids), batch_size):
-            batch = unique_ids[i:i + batch_size]
+            batch = unique_ids[i : i + batch_size]
 
             query = f"""
                     WITH input(v, ord) AS (
@@ -3602,7 +3612,7 @@ class PGGraphStorage(BaseGraphStorage):
         edges_dict: dict[tuple[str, str], dict] = {}
 
         for i in range(0, len(uniq_pairs), batch_size):
-            batch = uniq_pairs[i:i + batch_size]
+            batch = uniq_pairs[i : i + batch_size]
 
             pairs = [{"src": p["src"], "tgt": p["tgt"]} for p in batch]
 
@@ -3709,7 +3719,7 @@ class PGGraphStorage(BaseGraphStorage):
         edges_norm: dict[str, list[tuple[str, str]]] = {n: [] for n in unique_ids}
 
         for i in range(0, len(unique_ids), batch_size):
-            batch = unique_ids[i:i + batch_size]
+            batch = unique_ids[i : i + batch_size]
             # Format node IDs for the query
             formatted_ids = ", ".join([f'"{n}"' for n in batch])
 
@@ -4324,7 +4334,7 @@ TABLES = {
                     meta JSONB,
                     create_time TIMESTAMP(0) DEFAULT CURRENT_TIMESTAMP,
                     update_time TIMESTAMP(0) DEFAULT CURRENT_TIMESTAMP,
-	                CONSTRAINT LIGHTRAG_DOC_FULL_PK PRIMARY KEY (workspace, id)
+                    CONSTRAINT LIGHTRAG_DOC_FULL_PK PRIMARY KEY (workspace, id)
                     )"""
     },
     "LIGHTRAG_DOC_CHUNKS": {
@@ -4339,7 +4349,7 @@ TABLES = {
                     llm_cache_list JSONB NULL DEFAULT '[]'::jsonb,
                     create_time TIMESTAMP(0) DEFAULT CURRENT_TIMESTAMP,
                     update_time TIMESTAMP(0) DEFAULT CURRENT_TIMESTAMP,
-	                CONSTRAINT LIGHTRAG_DOC_CHUNKS_PK PRIMARY KEY (workspace, id)
+                    CONSTRAINT LIGHTRAG_DOC_CHUNKS_PK PRIMARY KEY (workspace, id)
                     )"""
     },
     "LIGHTRAG_VDB_CHUNKS": {
@@ -4354,7 +4364,7 @@ TABLES = {
                     file_path TEXT NULL,
                     create_time TIMESTAMP(0) DEFAULT CURRENT_TIMESTAMP,
                     update_time TIMESTAMP(0) DEFAULT CURRENT_TIMESTAMP,
-	                CONSTRAINT LIGHTRAG_VDB_CHUNKS_PK PRIMARY KEY (workspace, id)
+                    CONSTRAINT LIGHTRAG_VDB_CHUNKS_PK PRIMARY KEY (workspace, id)
                     )"""
     },
     "LIGHTRAG_VDB_ENTITY": {
@@ -4368,7 +4378,7 @@ TABLES = {
                     update_time TIMESTAMP(0) DEFAULT CURRENT_TIMESTAMP,
                     chunk_ids VARCHAR(255)[] NULL,
                     file_path TEXT NULL,
-	                CONSTRAINT LIGHTRAG_VDB_ENTITY_PK PRIMARY KEY (workspace, id)
+                    CONSTRAINT LIGHTRAG_VDB_ENTITY_PK PRIMARY KEY (workspace, id)
                     )"""
     },
     "LIGHTRAG_VDB_RELATION": {
@@ -4383,13 +4393,13 @@ TABLES = {
                     update_time TIMESTAMP(0) DEFAULT CURRENT_TIMESTAMP,
                     chunk_ids VARCHAR(255)[] NULL,
                     file_path TEXT NULL,
-	                CONSTRAINT LIGHTRAG_VDB_RELATION_PK PRIMARY KEY (workspace, id)
+                    CONSTRAINT LIGHTRAG_VDB_RELATION_PK PRIMARY KEY (workspace, id)
                     )"""
     },
     "LIGHTRAG_LLM_CACHE": {
         "ddl": """CREATE TABLE LIGHTRAG_LLM_CACHE (
-	                workspace varchar(255) NOT NULL,
-	                id varchar(255) NOT NULL,
+                    workspace varchar(255) NOT NULL,
+                    id varchar(255) NOT NULL,
                     original_prompt TEXT,
                     return_value TEXT,
                     chunk_id VARCHAR(255) NULL,
@@ -4397,26 +4407,26 @@ TABLES = {
                     queryparam JSONB NULL,
                     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	                CONSTRAINT LIGHTRAG_LLM_CACHE_PK PRIMARY KEY (workspace, id)
+                    CONSTRAINT LIGHTRAG_LLM_CACHE_PK PRIMARY KEY (workspace, id)
                     )"""
     },
     "LIGHTRAG_DOC_STATUS": {
         "ddl": """CREATE TABLE LIGHTRAG_DOC_STATUS (
-	               workspace varchar(255) NOT NULL,
-	               id varchar(255) NOT NULL,
-	               content_summary varchar(255) NULL,
-	               content_length int4 NULL,
-	               chunks_count int4 NULL,
-	               status varchar(64) NULL,
-	               file_path TEXT NULL,
-	               chunks_list JSONB NULL DEFAULT '[]'::jsonb,
-	               track_id varchar(255) NULL,
-	               metadata JSONB NULL DEFAULT '{}'::jsonb,
-	               error_msg TEXT NULL,
-	               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	               updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	               CONSTRAINT LIGHTRAG_DOC_STATUS_PK PRIMARY KEY (workspace, id)
-	              )"""
+                    workspace varchar(255) NOT NULL,
+                    id varchar(255) NOT NULL,
+                    content_summary varchar(255) NULL,
+                    content_length int4 NULL,
+                    chunks_count int4 NULL,
+                    status varchar(64) NULL,
+                    file_path TEXT NULL,
+                    chunks_list JSONB NULL DEFAULT '[]'::jsonb,
+                    track_id varchar(255) NULL,
+                    metadata JSONB NULL DEFAULT '{}'::jsonb,
+                    error_msg TEXT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT LIGHTRAG_DOC_STATUS_PK PRIMARY KEY (workspace, id)
+                    )"""
     },
     "LIGHTRAG_FULL_ENTITIES": {
         "ddl": """CREATE TABLE LIGHTRAG_FULL_ENTITIES (
@@ -4601,7 +4611,7 @@ SQL_TEMPLATES = {
                               JOIN rc ON TRUE
                      WHERE c.dist < $3
                        AND c.chunk_ids && (rc.chunk_arr::varchar[])
-                     ORDER BY c.dist, c.id 
+                     ORDER BY c.dist, c.id
                          LIMIT $4;
                      """,
     "entities": """
@@ -4627,7 +4637,7 @@ SQL_TEMPLATES = {
                          JOIN rc ON TRUE
                 WHERE c.dist < $3
                   AND c.chunk_ids && (rc.chunk_arr::varchar[])
-                ORDER BY c.dist, c.id 
+                ORDER BY c.dist, c.id
                     LIMIT $4;
                 """,
     "chunks": """
