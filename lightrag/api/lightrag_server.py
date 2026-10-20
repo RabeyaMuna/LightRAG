@@ -735,7 +735,7 @@ def create_app(args):
         send_dimensions=send_dimensions,
     )
 
-    # Configure rerank function based on args.rerank_bindingparameter
+    # Configure rerank function based on args.rerank_binding parameter
     rerank_model_func = None
     if args.rerank_binding != "null":
         from lightrag.rerank import cohere_rerank, jina_rerank, ali_rerank
