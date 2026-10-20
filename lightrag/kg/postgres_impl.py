@@ -924,7 +924,7 @@ class PostgreSQLDB:
                     )
                 else:
                     logger.warning(
-                        "Doesn't support this vector index type: {self.vector_index_type}. "
+                        f"Doesn't support this vector index type: {self.vector_index_type}. "
                         "Supported types: HNSW, IVFFLAT"
                     )
             except Exception as e:
@@ -2922,7 +2922,6 @@ class PGGraphStorage(BaseGraphStorage):
                 value converted to a python type
         """
 
-        @staticmethod
         def parse_agtype_string(agtype_str: str) -> tuple[str, str]:
             """
             Parse agtype string precisely, separating JSON content and type identifier
@@ -2948,7 +2947,6 @@ class PGGraphStorage(BaseGraphStorage):
 
             return json_content, type_identifier
 
-        @staticmethod
         def safe_json_parse(json_str: str, context: str = "") -> dict:
             """
             Safe JSON parsing with simplified error logging
@@ -3387,7 +3385,9 @@ class PGGraphStorage(BaseGraphStorage):
                 logger.error(f"[{self.workspace}] Error during edge deletion: {str(e)}")
                 raise
 
-    async def get_nodes_batch(self, node_ids: list[str], batch_size: int = 1000) -> dict[str, dict]:
+    async def get_nodes_batch(
+        self, node_ids: list[str], batch_size: int = 1000
+    ) -> dict[str, dict]:
         """
         Retrieve multiple nodes in one query using UNWIND.
 
@@ -3453,7 +3453,9 @@ class PGGraphStorage(BaseGraphStorage):
 
         return nodes_dict
 
-    async def node_degrees_batch(self, node_ids: list[str], batch_size: int = 500) -> dict[str, int]:
+    async def node_degrees_batch(
+        self, node_ids: list[str], batch_size: int = 500
+    ) -> dict[str, int]:
         """
         Retrieve the degree for multiple nodes in a single query using UNWIND.
         Calculates the total degree by counting distinct relationships.
@@ -3482,7 +3484,7 @@ class PGGraphStorage(BaseGraphStorage):
         in_degrees = {}
 
         for i in range(0, len(unique_ids), batch_size):
-            batch = unique_ids[i:i + batch_size]
+            batch = unique_ids[i : i + batch_size]
 
             query = f"""
                     WITH input(v, ord) AS (
@@ -3602,7 +3604,7 @@ class PGGraphStorage(BaseGraphStorage):
         edges_dict: dict[tuple[str, str], dict] = {}
 
         for i in range(0, len(uniq_pairs), batch_size):
-            batch = uniq_pairs[i:i + batch_size]
+            batch = uniq_pairs[i : i + batch_size]
 
             pairs = [{"src": p["src"], "tgt": p["tgt"]} for p in batch]
 
@@ -3709,7 +3711,7 @@ class PGGraphStorage(BaseGraphStorage):
         edges_norm: dict[str, list[tuple[str, str]]] = {n: [] for n in unique_ids}
 
         for i in range(0, len(unique_ids), batch_size):
-            batch = unique_ids[i:i + batch_size]
+            batch = unique_ids[i : i + batch_size]
             # Format node IDs for the query
             formatted_ids = ", ".join([f'"{n}"' for n in batch])
 
