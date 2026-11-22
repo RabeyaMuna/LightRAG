@@ -4549,10 +4549,10 @@ SQL_TEMPLATES = {
                       SET tokens=EXCLUDED.tokens,
                       chunk_order_index=EXCLUDED.chunk_order_index,
                       full_doc_id=EXCLUDED.full_doc_id,
-                      content = EXCLUDED.content,
+                      content=EXCLUDED.content,
                       content_vector=EXCLUDED.content_vector,
                       file_path=EXCLUDED.file_path,
-                      update_time = EXCLUDED.update_time
+                      update_time=EXCLUDED.update_time
                      """,
     "upsert_entity": """INSERT INTO LIGHTRAG_VDB_ENTITY (workspace, id, entity_name, content,
                       content_vector, chunk_ids, file_path, create_time, update_time)
@@ -4575,7 +4575,7 @@ SQL_TEMPLATES = {
                       content_vector=EXCLUDED.content_vector,
                       chunk_ids=EXCLUDED.chunk_ids,
                       file_path=EXCLUDED.file_path,
-                      update_time = EXCLUDED.update_time
+                      update_time=EXCLUDED.update_time
                      """,
     "relationships": """
                      WITH relevant_chunks AS (SELECT id as chunk_id
@@ -4601,7 +4601,7 @@ SQL_TEMPLATES = {
                               JOIN rc ON TRUE
                      WHERE c.dist < $3
                        AND c.chunk_ids && (rc.chunk_arr::varchar[])
-                     ORDER BY c.dist, c.id 
+                     ORDER BY c.dist, c.id
                          LIMIT $4;
                      """,
     "entities": """
@@ -4627,7 +4627,7 @@ SQL_TEMPLATES = {
                          JOIN rc ON TRUE
                 WHERE c.dist < $3
                   AND c.chunk_ids && (rc.chunk_arr::varchar[])
-                ORDER BY c.dist, c.id 
+                ORDER BY c.dist, c.id
                     LIMIT $4;
                 """,
     "chunks": """
