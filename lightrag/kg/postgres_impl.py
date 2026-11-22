@@ -4519,10 +4519,10 @@ SQL_TEMPLATES = {
                       SET tokens=EXCLUDED.tokens,
                       chunk_order_index=EXCLUDED.chunk_order_index,
                       full_doc_id=EXCLUDED.full_doc_id,
-                      content = EXCLUDED.content,
+                      content=EXCLUDED.content,
                       file_path=EXCLUDED.file_path,
                       llm_cache_list=EXCLUDED.llm_cache_list,
-                      update_time = EXCLUDED.update_time
+                      update_time=EXCLUDED.update_time
                      """,
     "upsert_full_entities": """INSERT INTO LIGHTRAG_FULL_ENTITIES (workspace, id, entity_names, count,
                       create_time, update_time)
@@ -4530,7 +4530,7 @@ SQL_TEMPLATES = {
                       ON CONFLICT (workspace,id) DO UPDATE
                       SET entity_names=EXCLUDED.entity_names,
                       count=EXCLUDED.count,
-                      update_time = EXCLUDED.update_time
+                      update_time=EXCLUDED.update_time
                      """,
     "upsert_full_relations": """INSERT INTO LIGHTRAG_FULL_RELATIONS (workspace, id, relation_pairs, count,
                       create_time, update_time)
